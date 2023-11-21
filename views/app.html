@@ -1,0 +1,78 @@
+<div id=app 
+    hx-get="/app/{{ .Name }}" 
+    hx-trigger="every 5s" 
+    hx-target="this" 
+    hx-swap="outerHTML" 
+    hx-select="#app">
+    <div>
+        <h2>Services Endpoints</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>IP</th>
+                    <th>Pod</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Endpoints}}
+                <tr>
+                    <td>{{ .IP }}</td>
+                    <td>{{ .TargetRef.Name }}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+
+    </div>
+    <br>
+    <div>       
+        <button 
+            hx-get="/app/{{ .Name }}/set_canary?enabled={{ not .CanaryEnabled }}" 
+            hx-target="#app"
+            hx-swap="outerHTML">
+            {{if .CanaryEnabled}}Disable{{else}}Enable{{end}} Canary
+        </button>
+    </div>
+    <div>
+        <h2>Deployments</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Image</th>
+                    <th>Track</th>
+                    <th>Replicas</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Deployments}}
+                <tr>
+                    <td>{{ .Name }}</td>
+                    <td>{{ .Image }}</td>
+                    <td>{{ .Track }}</td>
+                    <td>{{ .AvailableReplicas }}/{{ .Replicas }}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>
+<br>
+<div id="canary-form">
+    <form id="canary" 
+        hx-post="/app/{{ .Name }}/create_canary" 
+        hx-target="#app" 
+        hx-swap="outerHTML" 
+        hx-select="#app">
+        <div 
+        class="grid">
+            <label for="tag">Tag:
+                <input type="text" id="tag" name="tag" required>
+            </label>
+            <label for="replicas">Replicas:
+                <input type="number" id="replicas" name="replicas" required><br><br>
+            </label>
+            <button type="submit">Create canary deployment</button>
+        </div>
+    </form>
+</div>

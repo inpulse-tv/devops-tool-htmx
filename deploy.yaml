@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+    track: main
+  annotations:
+    devops-tool-htmx: "true"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+      track: main
+  template:
+    metadata:
+      labels:
+        app: nginx
+        track: main
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.25.0-alpine
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+  annotations:
+    devops-tool-htmx: "true"
+spec:
+  selector:
+    app: nginx
+    track: main
+  ports:
+    - port: 80
+      targetPort: 80
