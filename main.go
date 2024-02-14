@@ -32,10 +32,15 @@ type Deployment struct {
 	AvailableReplicas int32  `json:"availableReplicas"`
 }
 
+type Endpoint struct {
+	TargetPod string `json:"targetPod"`
+	Ip        string `json:"ip"`
+}
+
 type AppStateResponse struct {
-	CanaryEnabled bool                 `json:"canaryEnabled"`
-	Deployments   []Deployment         `json:"deployments"`
-	Endpoints     []v1.EndpointAddress `json:"endpoint"`
+	CanaryEnabled bool         `json:"canaryEnabled"`
+	Deployments   []Deployment `json:"deployments"`
+	Endpoints     []Endpoint   `json:"endpoints"`
 }
 
 type CanaryCreateRequest struct {
@@ -50,7 +55,7 @@ type jsonPatchOp struct {
 	Value interface{} `json:"value"`
 }
 
-func mapToCustomDeployment(deployments []appsv1.Deployment) []Deployment {
+func asCustomDeployment(deployments []appsv1.Deployment) []Deployment {
 	customDeployments := []Deployment{}
 	for _, v := range deployments {
 		deployment := Deployment{
@@ -63,6 +68,18 @@ func mapToCustomDeployment(deployments []appsv1.Deployment) []Deployment {
 		customDeployments = append(customDeployments, deployment)
 	}
 	return customDeployments
+}
+
+func asCustomEndpoint(endpoints []v1.EndpointAddress) []Endpoint {
+	customEndpoints := []Endpoint{}
+	for _, v := range endpoints {
+		endpoint := Endpoint{
+			TargetPod: v.TargetRef.Name,
+			Ip:        v.IP,
+		}
+		customEndpoints = append(customEndpoints, endpoint)
+	}
+	return customEndpoints
 }
 
 func GetAppState(name string, ctx context.Context, k8s *kubernetes.Clientset) (*AppStateResponse, error) {
@@ -79,6 +96,9 @@ func GetAppState(name string, ctx context.Context, k8s *kubernetes.Clientset) (*
 	for _, v := range deployments.Items {
 		managed, err := strconv.ParseBool(v.Annotations["devops-tool-htmx"])
 		if err != nil {
+			continue
+		}
+		if _, ok := v.Labels["track"]; !ok {
 			continue
 		}
 		if managed {
@@ -104,8 +124,8 @@ func GetAppState(name string, ctx context.Context, k8s *kubernetes.Clientset) (*
 
 	return &AppStateResponse{
 		CanaryEnabled: canaryEnabled,
-		Deployments:   mapToCustomDeployment(managedDeployments),
-		Endpoints:     addresses,
+		Deployments:   asCustomDeployment(managedDeployments),
+		Endpoints:     asCustomEndpoint(addresses),
 	}, nil
 }
 

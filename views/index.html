@@ -4,19 +4,15 @@
 <head>
     <title>Canary Deployments Manager</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css"> -->
-    <link rel="stylesheet" href="https://unpkg.com/missing.css@1.1.1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css">
+    <!-- <link rel="stylesheet" href="https://unpkg.com/missing.css@1.1.1"> -->
 </head>
 
 <script src="https://unpkg.com/htmx.org@1.9.8" crossorigin="anonymous"></script>
 
 <body>
     <main class="container">
-        <select name="name" 
-            hx-get="/app/" 
-            hx-target="#app" 
-            hx-swap="outerHTML"
-            autocomplete="off">
+        <select name="name" hx-get="/app/" hx-target="#app" hx-swap="outerHTML" autocomplete="off">
             <option value="" disabled selected>Choose an app</option>
             {{range $a := .Apps}}
             <option value="{{ $a }}">{{ $a }}</option>
